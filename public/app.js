@@ -683,3 +683,28 @@ async function updateStats() {
 fetchAccounts();
 showSection('accounts');
 setInterval(fetchAccounts, 30000);
+
+// Add Account Form Submit Handler
+addAccountForm.onsubmit = async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('acc-name').value.trim();
+    const type = document.querySelector('input[name="acc-type"]:checked')?.value || 'Messenger';
+    if (!name) return alert('يرجى إدخال اسم الحساب');
+    try {
+        const res = await fetch('/api/accounts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, type })
+        });
+        const result = await res.json();
+        if (result.id) {
+            closeModal('addAccountModal');
+            addAccountForm.reset();
+            fetchAccounts();
+        } else {
+            alert('فشل إضافة الحساب: ' + (result.error || 'خطأ غير معروف'));
+        }
+    } catch (err) {
+        alert('خطأ في الاتصال: ' + err.message);
+    }
+};
