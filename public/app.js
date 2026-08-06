@@ -708,3 +708,29 @@ addAccountForm.onsubmit = async (e) => {
         alert('خطأ في الاتصال: ' + err.message);
     }
 };
+
+// QR Code Handler
+window.showQR = (accountId) => {
+    const modal = document.getElementById('qrModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.getElementById('qr-canvas').getContext('2d').clearRect(0, 0, 300, 300);
+};
+
+socket.on('qr', (data) => {
+    const canvas = document.getElementById('qr-canvas');
+    if (!canvas) return;
+    QRCode.toCanvas(canvas, data.qr, { width: 280 }, (err) => {
+        if (err) console.error(err);
+    });
+    const modal = document.getElementById('qrModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+});
+
+socket.on('status', (data) => {
+    fetchAccounts();
+    if (data.status === 'Connected') {
+        closeModal('qrModal');
+    }
+});
