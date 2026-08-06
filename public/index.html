@@ -229,7 +229,7 @@
                 <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-slate-500 bg-white/5 rounded-3xl border border-dashed border-white/10">
                     <i data-lucide="message-square-off" class="w-10 h-10 mb-4"></i>
                     <p class="text-xl font-medium">لا يوجد حسابات مضافة حالياً</p>
-                    <button onclick="openModal('addAccountModal')" class="mt-6 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold transition-all">إضافة حساب جديد</button>
+                    <button onclick="document.getElementById('addAccountModal').classList.remove('hidden');document.getElementById('addAccountModal').classList.add('flex')" class="mt-6 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold transition-all">إضافة حساب جديد</button>
                 </div>
             </div>
 
