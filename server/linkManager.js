@@ -10,10 +10,10 @@ export async function getLinkStats() {
     const stats = await db.get(`
         SELECT 
             COUNT(*) as total,
-            SUM(CASE WHEN created_at >= date('now', '-1 day') THEN 1 ELSE 0 END) as new_links,
-            SUM(duplicate_count) as total_duplicates,
-            SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END) as active,
-            SUM(CASE WHEN status = 'Inactive' THEN 1 ELSE 0 END) as inactive,
+            SUM(CASE WHEN created_at >= NOW() - INTERVAL '1 day' THEN 1 ELSE 0 END) as new_links,
+            COALESCE(SUM(duplicate_count), 0) as total_duplicates,
+            COALESCE(SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END), 0) as active,
+            COALESCE(SUM(CASE WHEN status = 'Inactive' THEN 1 ELSE 0 END), 0) as inactive,
             (SELECT COUNT(*) FROM files) as file_count,
             (SELECT MAX(created_at) FROM links) as last_update,
             (SELECT MAX(timestamp) FROM link_operations WHERE operation = 'Import') as last_import

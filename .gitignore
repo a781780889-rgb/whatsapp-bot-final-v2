@@ -3,3 +3,4 @@ node_modules/
 *.db
 auth_info_baileys/
 sessions/
+pnpm-lock.yaml

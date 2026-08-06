@@ -150,9 +150,9 @@ export async function getJoinStats() {
     const stats = await db.get(`
         SELECT 
             COUNT(*) as total_links,
-            SUM(CASE WHEN join_status = 'Joined' THEN 1 ELSE 0 END) as joined,
-            SUM(CASE WHEN join_status = 'Pending' THEN 1 ELSE 0 END) as pending,
-            SUM(CASE WHEN join_status = 'Failed' THEN 1 ELSE 0 END) as failed,
+            COALESCE(SUM(CASE WHEN join_status = 'Joined' THEN 1 ELSE 0 END), 0) as joined,
+            COALESCE(SUM(CASE WHEN join_status = 'Pending' THEN 1 ELSE 0 END), 0) as pending,
+            COALESCE(SUM(CASE WHEN join_status = 'Failed' THEN 1 ELSE 0 END), 0) as failed,
             (SELECT COUNT(*) FROM accounts WHERE status = 'Connected') as active_accounts
         FROM links
     `);
