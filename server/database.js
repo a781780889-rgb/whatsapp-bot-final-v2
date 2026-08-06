@@ -125,6 +125,70 @@ export async function initDB() {
             error TEXT,
             timestamp TEXT DEFAULT CURRENT_TIMESTAMP
         )`);
+        await client.query(`CREATE TABLE IF NOT EXISTS search_tasks (
+            id TEXT PRIMARY KEY,
+            status TEXT DEFAULT 'Running',
+            account_ids TEXT NOT NULL,
+            scan_type TEXT DEFAULT 'Normal',
+            time_period TEXT DEFAULT 'all',
+            start_date TEXT,
+            end_date TEXT,
+            current_account_index INTEGER DEFAULT 0,
+            current_group_index INTEGER DEFAULT 0,
+            paused BOOLEAN DEFAULT false,
+            stop_requested BOOLEAN DEFAULT false,
+            started_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            completed_at TEXT,
+            stats_total_groups INTEGER DEFAULT 0,
+            stats_completed_groups INTEGER DEFAULT 0,
+            stats_messages_scanned INTEGER DEFAULT 0,
+            stats_links_found INTEGER DEFAULT 0,
+            stats_new_links INTEGER DEFAULT 0,
+            stats_duplicate_links INTEGER DEFAULT 0,
+            stats_errors INTEGER DEFAULT 0,
+            created_by TEXT DEFAULT 'Admin',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )`);
+        await client.query(`CREATE TABLE IF NOT EXISTS search_results (
+            id TEXT PRIMARY KEY,
+            task_id TEXT REFERENCES search_tasks(id) ON DELETE CASCADE,
+            url TEXT NOT NULL,
+            link_type TEXT,
+            account_id TEXT,
+            group_id TEXT,
+            group_name TEXT,
+            message_id TEXT,
+            message_text TEXT,
+            occurrence_count INTEGER DEFAULT 1,
+            first_found_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            last_found_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            accounts_found_in TEXT,
+            groups_found_in TEXT,
+            join_status TEXT DEFAULT 'Not Joined',
+            is_valid BOOLEAN DEFAULT true,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(task_id, url)
+        )`);
+        await client.query(`CREATE TABLE IF NOT EXISTS search_operations_log (
+            id SERIAL PRIMARY KEY,
+            task_id TEXT REFERENCES search_tasks(id) ON DELETE CASCADE,
+            operation TEXT NOT NULL,
+            account_id TEXT,
+            group_id TEXT,
+            group_name TEXT,
+            message_count INTEGER DEFAULT 0,
+            links_found INTEGER DEFAULT 0,
+            status TEXT DEFAULT 'Processing',
+            error_message TEXT,
+            duration INTEGER,
+            timestamp TEXT DEFAULT CURRENT_TIMESTAMP
+        )`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_search_results_url ON search_results(url)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_search_results_task_id ON search_results(task_id)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_search_results_link_type ON search_results(link_type)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_search_results_account_id ON search_results(account_id)`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_search_tasks_status ON search_tasks(status)`);
     } finally {
         client.release();
     }

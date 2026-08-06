@@ -54,6 +54,10 @@
                 <i data-lucide="user-plus" class="w-5 h-5"></i>
                 <span class="sidebar-text font-medium">الانضمام للروابط</span>
             </a>
+            <a href="#" onclick="showSection('search')" id="menu-search" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-400 hover:text-white transition-all group">
+                <i data-lucide="search" class="w-5 h-5"></i>
+                <span class="sidebar-text font-medium">بحث عن الروابط</span>
+            </a>
             <a href="#" onclick="showSection('groups')" id="menu-groups" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-400 hover:text-white transition-all group">
                 <i data-lucide="edit-3" class="w-5 h-5"></i>
                 <span class="sidebar-text font-medium">تعديل المجموعات</span>
@@ -209,6 +213,144 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Search Links Section -->
+            <div id="section-search" class="hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Settings Panel -->
+                    <div class="card p-6 rounded-3xl space-y-4">
+                        <h3 class="text-lg font-bold">إعدادات البحث</h3>
+                        
+                        <!-- Scan Type -->
+                        <div>
+                            <label class="text-xs text-slate-400 mb-2 block">نوع الفحص</label>
+                            <select id="search-scan-type" class="w-full bg-dark-950 border border-white/10 rounded-xl p-3 text-white text-sm">
+                                <option value="Normal">عادي (سريع)</option>
+                                <option value="Medium">متوسط</option>
+                                <option value="Deep">عميق (شامل)</option>
+                            </select>
+                        </div>
+
+                        <!-- Time Period -->
+                        <div>
+                            <label class="text-xs text-slate-400 mb-2 block">الفترة الزمنية</label>
+                            <select id="search-time-period" class="w-full bg-dark-950 border border-white/10 rounded-xl p-3 text-white text-sm">
+                                <option value="all">جميع الرسائل</option>
+                                <option value="today">اليوم</option>
+                                <option value="3days">آخر 3 أيام</option>
+                                <option value="week">آخر أسبوع</option>
+                                <option value="month">آخر شهر</option>
+                                <option value="year">آخر سنة</option>
+                                <option value="custom">فترة مخصصة</option>
+                            </select>
+                        </div>
+
+                        <!-- Custom Date Range -->
+                        <div id="search-custom-dates" class="hidden space-y-2">
+                            <input type="date" id="search-start-date" class="w-full bg-dark-950 border border-white/10 rounded-xl p-3 text-white text-sm">
+                            <input type="date" id="search-end-date" class="w-full bg-dark-950 border border-white/10 rounded-xl p-3 text-white text-sm">
+                        </div>
+
+                        <!-- Account Selector -->
+                        <div>
+                            <label class="text-xs text-slate-400 mb-2 block">اختر الحسابات</label>
+                            <div id="search-account-selector" class="max-h-40 overflow-y-auto space-y-2"></div>
+                        </div>
+
+                        <!-- Control Buttons -->
+                        <div class="grid grid-cols-2 gap-3 pt-4 border-t border-white/10">
+                            <button id="btn-start-search" class="bg-green-600 text-white py-3 rounded-2xl font-bold text-sm">بدء البحث</button>
+                            <button id="btn-stop-search" disabled class="bg-red-600/20 text-red-500 py-3 rounded-2xl font-bold text-sm">إيقاف</button>
+                        </div>
+                        <button id="btn-pause-search" disabled class="w-full bg-yellow-600/20 text-yellow-500 py-2 rounded-xl font-bold text-sm">مؤقت</button>
+                    </div>
+
+                    <!-- Real-Time Dashboard -->
+                    <div class="lg:col-span-2 card p-6 rounded-3xl space-y-4">
+                        <h3 class="text-lg font-bold">لوحة المراقبة المباشرة</h3>
+                        
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center">
+                            <div class="bg-white/5 p-3 rounded-xl">
+                                <p class="text-[10px] text-slate-400">الحساب الحالي</p>
+                                <p id="search-current-account" class="text-sm font-bold text-white">-</p>
+                            </div>
+                            <div class="bg-white/5 p-3 rounded-xl">
+                                <p class="text-[10px] text-slate-400">المجموعة الحالية</p>
+                                <p id="search-current-group" class="text-sm font-bold text-white truncate">-</p>
+                            </div>
+                            <div class="bg-white/5 p-3 rounded-xl">
+                                <p class="text-[10px] text-slate-400">التقدم</p>
+                                <p id="search-progress-percent" class="text-sm font-bold text-green-400">0%</p>
+                            </div>
+                            <div class="bg-white/5 p-3 rounded-xl">
+                                <p class="text-[10px] text-slate-400">المجموعات المكتملة</p>
+                                <p id="search-completed-groups" class="text-sm font-bold text-white">0</p>
+                            </div>
+                            <div class="bg-white/5 p-3 rounded-xl">
+                                <p class="text-[10px] text-slate-400">الرسائل المفحوصة</p>
+                                <p id="search-messages-scanned" class="text-sm font-bold text-white">0</p>
+                            </div>
+                            <div class="bg-white/5 p-3 rounded-xl">
+                                <p class="text-[10px] text-slate-400">الروابط المكتشفة</p>
+                                <p id="search-links-found" class="text-sm font-bold text-blue-400">0</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 border-t border-white/10">
+                            <div class="flex justify-between text-[10px] mb-2">
+                                <span>نسبة الإنجاز</span>
+                                <span id="search-progress-text">0/0</span>
+                            </div>
+                            <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+                                <div id="search-progress-bar" class="bg-green-500 h-full w-0 transition-all duration-500"></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white/5 p-3 rounded-xl max-h-48 overflow-y-auto">
+                            <p class="text-[10px] text-slate-400 mb-2">سجل الأحداث</p>
+                            <div id="search-live-feed" class="space-y-1 text-[9px]"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div class="card p-6 rounded-3xl space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold">نتائج البحث</h3>
+                        <div class="flex gap-2">
+                            <input type="text" id="search-filter-url" placeholder="بحث في الروابط..." class="bg-dark-950 border border-white/10 rounded-xl px-3 py-2 text-sm text-white">
+                            <select id="search-filter-type" class="bg-dark-950 border border-white/10 rounded-xl px-3 py-2 text-sm text-white">
+                                <option value="">جميع الأنواع</option>
+                                <option value="whatsapp_group">مجموعات واتساب</option>
+                                <option value="whatsapp_channel">قنوات واتساب</option>
+                                <option value="telegram">تيليجرام</option>
+                                <option value="discord">ديسكورد</option>
+                                <option value="facebook">فيسبوك</option>
+                                <option value="twitter">تويتر</option>
+                                <option value="instagram">إنستجرام</option>
+                                <option value="youtube">يوتيوب</option>
+                            </select>
+                            <button onclick="exportSearchResults()" class="bg-blue-600/20 text-blue-400 px-4 py-2 rounded-xl text-sm font-bold">تصدير</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white/5 rounded-2xl overflow-hidden">
+                        <table class="w-full text-right text-sm">
+                            <thead class="bg-white/5 text-slate-400 text-[10px] uppercase">
+                                <tr>
+                                    <th class="px-4 py-3">الرابط</th>
+                                    <th class="px-4 py-3">النوع</th>
+                                    <th class="px-4 py-3">المجموعة</th>
+                                    <th class="px-4 py-3">التكرار</th>
+                                    <th class="px-4 py-3">الحالة</th>
+                                    <th class="px-4 py-3">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="search-results-table" class="divide-y divide-white/5 text-xs"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -264,5 +406,6 @@
     </div>
 
     <script src="/app.js"></script>
+    <script src="/search.js"></script>
 </body>
 </html>

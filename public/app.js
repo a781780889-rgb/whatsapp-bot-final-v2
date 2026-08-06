@@ -40,6 +40,7 @@ window.showSection = (section) => {
 
     if (section === 'links') fetchLinks();
     if (section === 'join') { fetchJoinStats(); renderJoinAccountSelector(); }
+    if (section === 'search') { renderSearchAccountSelector(); fetchSearchResults(); }
     if (section === 'groups') renderGroupAccountSelector();
     if (section === 'mentions') renderMentionAccountSelector();
     updateIcons();

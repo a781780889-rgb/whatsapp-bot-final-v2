@@ -14,6 +14,7 @@ import { getLinkStats, importLinks, getLinks } from './linkManager.js';
 import { startJoinTask, stopTask, pauseTask, getJoinStats, getJoinLogs } from './joinManager.js';
 import { getAccountGroups, startGroupEditTask, stopGroupTask } from './groupManager.js';
 import { startMentionTask, stopMentionTask, saveMentionTemplate, getMentionTemplates, deleteMentionTemplate } from './mentionManager.js';
+import { startSearchTask, stopSearchTask, pauseSearchTask, getSearchStats, getSearchResults, getSearchTaskDetails, deleteSearchTask, updateSearchResultStatus, exportSearchResults } from './searchManager.js';
 
 const require = createRequire(import.meta.url);
 const archiver = require('archiver');
@@ -322,6 +323,97 @@ app.get('/api/mentions/logs', async (req, res) => {
     const db = getDB();
     const logs = await db.all('SELECT * FROM mention_logs ORDER BY timestamp DESC LIMIT 100');
     res.json(logs);
+});
+
+// Search Links API
+app.post('/api/search/start', async (req, res) => {
+    try {
+        const result = await startSearchTask(req.body, io);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/search/stop/:taskId', async (req, res) => {
+    try {
+        const success = stopSearchTask(req.params.taskId);
+        res.json({ success });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/search/pause/:taskId', async (req, res) => {
+    try {
+        const result = pauseSearchTask(req.params.taskId);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/search/stats', async (req, res) => {
+    try {
+        const stats = await getSearchStats();
+        res.json(stats);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/search/results', async (req, res) => {
+    try {
+        const results = await getSearchResults(req.query);
+        res.json(results);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/search/task/:taskId', async (req, res) => {
+    try {
+        const details = await getSearchTaskDetails(req.params.taskId);
+        res.json(details);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.delete('/api/search/task/:taskId', async (req, res) => {
+    try {
+        const result = await deleteSearchTask(req.params.taskId);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.patch('/api/search/result/:resultId', async (req, res) => {
+    try {
+        const { joinStatus } = req.body;
+        const result = await updateSearchResultStatus(req.params.resultId, joinStatus);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/search/export/:taskId', async (req, res) => {
+    try {
+        const format = req.query.format || 'json';
+        const data = await exportSearchResults(req.params.taskId, format);
+        
+        if (format === 'csv') {
+            res.setHeader('Content-Type', 'text/csv');
+            res.setHeader('Content-Disposition', 'attachment; filename=search-results.csv');
+            res.send(data);
+        } else {
+            res.json(data);
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Socket.IO
