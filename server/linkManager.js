@@ -10,8 +10,7 @@ export async function getLinkStats() {
     const stats = await db.get(`
         SELECT 
             COUNT(*) as total,
-            SUM(CASE WHEN created_at >= NOW() - INTERVAL '1 day' THEN 1 ELSE 0 END) as new_links,
-            COALESCE(SUM(duplicate_count), 0) as total_duplicates,
+            SUM(CASE WHEN created_at >= datetime('now', '-1 day') THEN 1 ELSE 0 END) as new_links,
             COALESCE(SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END), 0) as active,
             COALESCE(SUM(CASE WHEN status = 'Inactive' THEN 1 ELSE 0 END), 0) as inactive,
             (SELECT COUNT(*) FROM files) as file_count,
@@ -20,16 +19,18 @@ export async function getLinkStats() {
         FROM links
     `);
     
-    // Fallback for nulls
+    // SQLite doesn't have a direct way to sum duplicate_count from files easily in this query without join
+    const fileStats = await db.get('SELECT SUM(duplicate_count) as total_duplicates FROM files');
+
     return {
-        total: stats.total || 0,
-        new_links: stats.new_links || 0,
-        duplicates: stats.total_duplicates || 0,
-        active: stats.active || 0,
-        inactive: stats.inactive || 0,
-        file_count: stats.file_count || 0,
-        last_update: stats.last_update || 'N/A',
-        last_import: stats.last_import || 'N/A'
+        total: stats?.total || 0,
+        new_links: stats?.new_links || 0,
+        duplicates: fileStats?.total_duplicates || 0,
+        active: stats?.active || 0,
+        inactive: stats?.inactive || 0,
+        file_count: stats?.file_count || 0,
+        last_update: stats?.last_update || 'N/A',
+        last_import: stats?.last_import || 'N/A'
     };
 }
 
@@ -38,7 +39,6 @@ export async function importLinks(file, user = 'Admin', io) {
     const fileId = uuidv4();
     const startTime = Date.now();
     
-    // Create file record
     await db.run(
         'INSERT INTO files (id, filename, original_name, type, size, status) VALUES (?, ?, ?, ?, ?, ?)',
         [fileId, file.filename, file.originalname, file.mimetype, file.size, 'Processing']
@@ -78,7 +78,6 @@ export async function importLinks(file, user = 'Admin', io) {
         let dupCount = 0;
         let errCount = 0;
         
-        // Process links one by one for deduplication
         for (let i = 0; i < links.length; i++) {
             const url = links[i];
             try {
@@ -97,7 +96,6 @@ export async function importLinks(file, user = 'Admin', io) {
                 errCount++;
             }
             
-            // Progress update via WebSocket every 100 links
             if (i % 100 === 0 || i === links.length - 1) {
                 io.emit('import-progress', {
                     fileId,
@@ -167,16 +165,16 @@ export async function getLinks(params) {
     
     query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
     const countValues = [...values];
-    values.push(limit, offset);
+    values.push(parseInt(limit), parseInt(offset));
     
     const rows = await db.all(query, values);
     const total = await db.get(countQuery, countValues);
     
     return {
         links: rows,
-        total: total.total,
+        total: total?.total || 0,
         page: parseInt(page),
         limit: parseInt(limit),
-        pages: Math.ceil(total.total / limit)
+        pages: Math.ceil((total?.total || 0) / limit)
     };
 }

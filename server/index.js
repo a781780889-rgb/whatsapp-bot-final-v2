@@ -11,7 +11,7 @@ import fs from 'fs';
 import { createRequire } from 'module';
 import multer from 'multer';
 import { getLinkStats, importLinks, getLinks } from './linkManager.js';
-import { startJoinTask, stopTask, getJoinStats, getJoinLogs } from './joinManager.js';
+import { startJoinTask, stopTask, pauseTask, getJoinStats, getJoinLogs } from './joinManager.js';
 import { getAccountGroups, startGroupEditTask, stopGroupTask } from './groupManager.js';
 import { startMentionTask, stopMentionTask, saveMentionTemplate, getMentionTemplates, deleteMentionTemplate } from './mentionManager.js';
 
@@ -31,7 +31,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Multer setup for file uploads
 const uploadDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
@@ -92,19 +91,6 @@ app.get('/api/accounts/:id/backup', async (req, res) => {
     archive.finalize();
 });
 
-app.get('/api/system-stats', (req, res) => {
-    const mem = process.memoryUsage();
-    res.json({
-        cpu: process.cpuUsage(),
-        memory: {
-            rss: Math.round(mem.rss / 1024 / 1024) + ' MB',
-            heapTotal: Math.round(mem.heapTotal / 1024 / 1024) + ' MB',
-            heapUsed: Math.round(mem.heapUsed / 1024 / 1024) + ' MB',
-        },
-        uptime: Math.round(process.uptime()) + 's'
-    });
-});
-
 app.get('/api/stats', async (req, res) => {
     const db = getDB();
     const stats = await db.get(`
@@ -117,7 +103,7 @@ app.get('/api/stats', async (req, res) => {
             SUM(CASE WHEN type = 'Messenger' THEN 1 ELSE 0 END) as messenger
         FROM accounts
     `);
-    res.json(stats);
+    res.json(stats || { total: 0, connected: 0, disconnected: 0, waiting_qr: 0, business: 0, messenger: 0 });
 });
 
 // Link Management API
@@ -169,20 +155,12 @@ app.get('/api/links', async (req, res) => {
 
 app.post('/api/links/import', upload.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-    
     try {
-        // Start import process asynchronously
         importLinks(req.file, 'Admin', io);
         res.json({ message: 'Import started', filename: req.file.originalname });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
-});
-
-app.get('/api/links/files', async (req, res) => {
-    const db = getDB();
-    const files = await db.all('SELECT * FROM files ORDER BY created_at DESC');
-    res.json(files);
 });
 
 app.get('/api/links/logs', async (req, res) => {
@@ -230,6 +208,15 @@ app.post('/api/join/stop/:taskId', async (req, res) => {
     try {
         const success = stopTask(req.params.taskId);
         res.json({ success });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/join/pause/:taskId', async (req, res) => {
+    try {
+        const result = pauseTask(req.params.taskId);
+        res.json(result);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

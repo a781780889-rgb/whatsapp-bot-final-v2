@@ -2,20 +2,7 @@ import { getDB } from './database.js';
 import { getSession } from './whatsapp.js';
 import { v4 as uuidv4 } from 'uuid';
 
-let activeTasks = new Map();
-
-export async function getGroupParticipants(accountId, groupId) {
-    const sock = getSession(accountId);
-    if (!sock) throw new Error('Account not connected');
-
-    try {
-        const metadata = await sock.groupMetadata(groupId);
-        return metadata.participants || [];
-    } catch (error) {
-        console.error('Failed to fetch participants:', error);
-        throw error;
-    }
-}
+let activeMentionTasks = new Map();
 
 export async function startMentionTask(options, io) {
     const { accountIds, groups, message, mentionSettings, executionSettings } = options;
@@ -25,121 +12,97 @@ export async function startMentionTask(options, io) {
     const task = {
         id: taskId,
         accountIds,
-        groups, // Array of { id, name }
+        groups,
         message,
-        mentionSettings: {
-            enabled: mentionSettings?.enabled ?? true,
-            maxPerMessage: parseInt(mentionSettings?.maxPerMessage) || 20,
-            excludeAdmins: mentionSettings?.excludeAdmins ?? false,
-            excludeMe: mentionSettings?.excludeMe ?? true
-        },
-        executionSettings: {
-            delay: parseInt(executionSettings?.delay) || 10,
-            concurrent: parseInt(executionSettings?.concurrent) || 1
-        },
-        currentIndex: 0,
+        mentionSettings,
+        executionSettings,
         status: 'Running',
+        currentIndex: 0,
         stats: {
             totalGroups: groups.length,
-            completedGroups: 0,
             sentMessages: 0,
-            failedMessages: 0,
             totalMentions: 0,
-            startTime: Date.now()
+            errors: 0
         },
         stopRequested: false
     };
 
-    activeTasks.set(taskId, task);
+    activeMentionTasks.set(taskId, task);
     processMentionTask(taskId, io);
 
-    return { taskId, total: groups.length };
+    return { taskId };
 }
 
 async function processMentionTask(taskId, io) {
-    const task = activeTasks.get(taskId);
-    if (!task || task.status !== 'Running') return;
+    const task = activeMentionTasks.get(taskId);
+    if (!task) return;
 
     const db = getDB();
     const io_emit = (event, data) => io.emit(`mention-task-${event}`, { taskId, ...data });
 
-    for (const group of task.groups) {
-        if (task.stopRequested) break;
-
-        const accountId = task.accountIds[task.currentIndex % task.accountIds.length];
+    for (let i = 0; i < task.groups.length && !task.stopRequested; i++) {
+        const group = task.groups[i];
+        const accountId = task.accountIds[i % task.accountIds.length];
         const sock = getSession(accountId);
 
         if (!sock) {
-            task.stats.failedMessages++;
-            task.currentIndex++;
+            task.stats.errors++;
             continue;
         }
 
         try {
             io_emit('status', {
-                currentIndex: task.currentIndex,
+                currentIndex: i,
                 currentGroup: group.name,
-                accountId,
                 stats: task.stats
             });
 
-            let participants = [];
-            if (task.mentionSettings.enabled) {
-                const allParticipants = await getGroupParticipants(accountId, group.id);
-                participants = allParticipants.filter(p => {
-                    if (task.mentionSettings.excludeMe && p.id === sock.user.id) return false;
-                    if (task.mentionSettings.excludeAdmins && p.admin) return false;
-                    return true;
-                }).map(p => p.id);
+            const groupMetadata = await sock.groupMetadata(group.id);
+            let participants = groupMetadata.participants;
+
+            if (task.mentionSettings.excludeAdmins) {
+                participants = participants.filter(p => !p.admin);
+            }
+            if (task.mentionSettings.excludeMe) {
+                participants = participants.filter(p => p.id !== sock.user.id);
             }
 
-            if (participants.length > 0 && task.mentionSettings.enabled) {
-                // Chunk participants
-                const chunkSize = task.mentionSettings.maxPerMessage;
-                for (let i = 0; i < participants.length; i += chunkSize) {
-                    if (task.stopRequested) break;
-                    
-                    const chunk = participants.slice(i, i + chunkSize);
-                    await sock.sendMessage(group.id, {
-                        text: task.message,
-                        mentions: chunk
-                    });
-                    
-                    task.stats.sentMessages++;
-                    task.stats.totalMentions += chunk.length;
-                    
-                    // Small delay between chunks in the same group
-                    if (i + chunkSize < participants.length) {
-                        await new Promise(r => setTimeout(r, 2000));
-                    }
-                }
-            } else {
-                // Send without mentions
-                await sock.sendMessage(group.id, { text: task.message });
+            const mentions = participants.map(p => p.id);
+            const maxPerMsg = parseInt(task.mentionSettings.maxPerMessage) || 20;
+
+            for (let j = 0; j < mentions.length; j += maxPerMsg) {
+                if (task.stopRequested) break;
+                
+                const chunk = mentions.slice(j, j + maxPerMsg);
+                await sock.sendMessage(group.id, {
+                    text: task.message,
+                    mentions: chunk
+                });
+                
                 task.stats.sentMessages++;
+                task.stats.totalMentions += chunk.length;
+                
+                if (j + maxPerMsg < mentions.length) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
             }
 
-            task.stats.completedGroups++;
-            
-            // Log success
             await db.run(
                 'INSERT INTO mention_logs (task_id, account_id, group_id, group_name, status, mention_count) VALUES (?, ?, ?, ?, ?, ?)',
-                [taskId, accountId, group.id, group.name, 'Success', participants.length]
+                [taskId, accountId, group.id, group.name, 'Success', mentions.length]
             );
 
         } catch (error) {
-            task.stats.failedMessages++;
-            console.error('Mention task error:', error);
+            task.stats.errors++;
+            console.error('Mention error:', error);
             await db.run(
                 'INSERT INTO mention_logs (task_id, account_id, group_id, group_name, status, error) VALUES (?, ?, ?, ?, ?, ?)',
                 [taskId, accountId, group.id, group.name, 'Failed', error.message]
             );
         }
 
-        task.currentIndex++;
-
-        if (task.currentIndex < task.groups.length && !task.stopRequested) {
-            const delay = task.executionSettings.delay;
+        if (i < task.groups.length - 1 && !task.stopRequested) {
+            const delay = parseInt(task.executionSettings.delay) || 5;
             io_emit('delay', { seconds: delay });
             await new Promise(resolve => setTimeout(resolve, delay * 1000));
         }
@@ -147,11 +110,11 @@ async function processMentionTask(taskId, io) {
 
     task.status = task.stopRequested ? 'Stopped' : 'Completed';
     io_emit('finished', { status: task.status, stats: task.stats });
-    activeTasks.delete(taskId);
+    activeMentionTasks.delete(taskId);
 }
 
 export function stopMentionTask(taskId) {
-    const task = activeTasks.get(taskId);
+    const task = activeMentionTasks.get(taskId);
     if (task) {
         task.stopRequested = true;
         return true;

@@ -10,100 +10,27 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap');
-        
-        :root {
-            --header-height: 72px;
-        }
-
-        body { 
-            font-family: 'Tajawal', sans-serif; 
-            background-color: #0f172a; 
-        }
-
-        .glass-header {
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .sidebar { 
-            width: 260px; 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-        }
-
-        .sidebar.collapsed {
-            width: 80px;
-        }
-
-        .card { 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .card:hover { 
-            transform: translateY(-4px); 
-            background: rgba(30, 41, 59, 0.8);
-            border-color: rgba(34, 197, 94, 0.3);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-
+        :root { --header-height: 72px; }
+        body { font-family: 'Tajawal', sans-serif; background-color: #0f172a; }
+        .glass-header { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .sidebar { width: 260px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar.collapsed { width: 80px; }
+        .card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .card:hover { transform: translateY(-4px); background: rgba(30, 41, 59, 0.8); border-color: rgba(34, 197, 94, 0.3); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
         .status-online { background-color: #22c55e; box-shadow: 0 0 8px #22c55e; }
         .status-warning { background-color: #eab308; box-shadow: 0 0 8px #eab308; }
         .status-error { background-color: #ef4444; box-shadow: 0 0 8px #ef4444; }
-
-        .search-input:focus + .search-shortcut {
-            display: none;
-        }
-
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
-
-        .dropdown-animate {
-            transform-origin: top;
-            animation: dropdown 0.2s ease-out;
-        }
-
-        @keyframes dropdown {
-            from { opacity: 0; transform: scale(0.95) translateY(-10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
     </style>
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        dark: {
-                            950: '#020617',
-                            900: '#0f172a',
-                            800: '#1e293b',
-                            700: '#334155',
-                        }
-                    }
-                }
-            }
-        }
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { dark: { 950: '#020617', 900: '#0f172a', 800: '#1e293b', 700: '#334155' } } } } }
     </script>
 </head>
 <body class="flex h-screen overflow-hidden text-slate-200">
-    <!-- Sidebar -->
     <aside id="sidebar" class="sidebar bg-dark-950 border-l border-white/5 flex flex-col z-40">
         <div class="h-[72px] flex items-center px-6 border-b border-white/5 gap-3">
             <div class="bg-green-500/20 p-2 rounded-xl border border-green-500/30">
@@ -114,7 +41,6 @@
                 <p class="text-[10px] text-slate-500 uppercase tracking-wider">Enterprise Edition</p>
             </div>
         </div>
-
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
             <a href="#" onclick="showSection('accounts')" id="menu-accounts" class="flex items-center gap-3 p-3 rounded-xl bg-green-500/10 text-green-400 border border-green-500/20 group">
                 <i data-lucide="layout-grid" class="w-5 h-5"></i>
@@ -132,24 +58,15 @@
                 <i data-lucide="edit-3" class="w-5 h-5"></i>
                 <span class="sidebar-text font-medium">تعديل المجموعات</span>
             </a>
-            <a href="#" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-400 hover:text-white transition-all group">
+            <a href="#" onclick="showSection('mentions')" id="menu-mentions" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-400 hover:text-white transition-all group">
                 <i data-lucide="message-square" class="w-5 h-5"></i>
-                <span class="sidebar-text font-medium">الرسائل التلقائية</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-400 hover:text-white transition-all group">
-                <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-                <span class="sidebar-text font-medium">التحليلات</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 text-slate-400 hover:text-white transition-all group">
-                <i data-lucide="database" class="w-5 h-5"></i>
-                <span class="sidebar-text font-medium">سجل العمليات</span>
+                <span class="sidebar-text font-medium">الإشارات (Mentions)</span>
             </a>
         </nav>
-
         <div class="p-4 border-t border-white/5">
             <div class="bg-dark-900 rounded-xl p-3 border border-white/5 sidebar-text">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-[10px] text-slate-500">استهلاك الموارد</span>
+                    <span class="text-[10px] text-slate-500">استهلاك الذاكرة</span>
                     <span id="ram-usage-text" class="text-[10px] text-green-500 font-bold">0%</span>
                 </div>
                 <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
@@ -159,375 +76,188 @@
         </div>
     </aside>
 
-    <!-- Main Content -->
     <div class="flex-1 flex flex-col min-w-0">
-        <!-- Professional Header -->
         <header class="glass-header h-[72px] sticky top-0 z-30 px-6 flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <button id="toggleSidebar" class="p-2 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors">
                     <i data-lucide="menu" class="w-5 h-5"></i>
                 </button>
-                <div class="h-6 w-[1px] bg-white/10 mx-2 hidden md:block"></div>
                 <div class="hidden lg:flex flex-col">
                     <div class="flex items-center gap-2">
                         <span class="text-sm font-bold">Workspace</span>
                         <span class="bg-blue-500/20 text-blue-400 text-[10px] px-1.5 py-0.5 rounded border border-blue-500/30 font-bold">PRODUCTION</span>
                     </div>
-                    <div class="flex items-center gap-1.5 mt-0.5">
-                        <span class="status-dot status-online"></span>
-                        <span class="text-[10px] text-slate-500 font-medium">النظام يعمل بكفاءة</span>
-                    </div>
                 </div>
             </div>
-
-            <div class="flex-1 max-w-xl px-8 hidden md:block">
-                <div class="relative group">
-                    <i data-lucide="search" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-green-500 transition-colors"></i>
-                    <input type="text" id="global-search" placeholder="ابحث عن حساب، رابط، أو مهمة..." 
-                        class="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pr-10 pl-4 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all search-input">
-                </div>
-            </div>
-
-            <div class="flex items-center gap-2 md:gap-4">
-                <div class="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/5">
-                    <button onclick="openModal('addAccountModal')" class="p-2 hover:bg-green-500/20 rounded-lg text-slate-400 hover:text-green-400 transition-all tooltip" title="إضافة حساب">
-                        <i data-lucide="plus-circle" class="w-5 h-5"></i>
-                    </button>
-                    <button onclick="fetchAccounts()" class="p-2 hover:bg-blue-500/20 rounded-lg text-slate-400 hover:text-blue-400 transition-all tooltip" title="تحديث البيانات">
-                        <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-                    </button>
-                </div>
-                <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center font-bold text-white shadow-lg shadow-green-500/20">
-                    A
-                </div>
+            <div class="flex items-center gap-4">
+                <div id="header-stats" class="flex gap-4"></div>
+                <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center font-bold text-white shadow-lg">A</div>
             </div>
         </header>
 
-        <!-- Page Header -->
         <div class="px-8 pt-6 pb-2">
             <nav class="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-widest mb-4">
-                <a href="#" class="hover:text-white transition-colors">الرئيسية</a>
+                <a href="#">الرئيسية</a>
                 <i data-lucide="chevron-left" class="w-3 h-3"></i>
                 <span id="breadcrumb-current" class="text-slate-300 font-bold">إدارة الحسابات</span>
             </nav>
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 id="page-title" class="text-2xl font-bold text-white">إدارة حسابات واتساب</h1>
-                    <p id="page-subtitle" class="text-sm text-slate-400 mt-1">إدارة وربط حسابات الواتساب الخاصة بك في مكان واحد</p>
-                </div>
-                <div class="flex items-center gap-3" id="header-stats">
-                    <!-- Stats injected here -->
-                </div>
-            </div>
+            <h1 id="page-title" class="text-2xl font-bold text-white">إدارة حسابات واتساب</h1>
+            <p id="page-subtitle" class="text-sm text-slate-400 mt-1">إدارة وربط حسابات الواتساب الخاصة بك في مكان واحد</p>
         </div>
 
-        <!-- Content Area -->
         <main class="flex-1 overflow-y-auto p-8">
             <!-- Accounts Section -->
             <div id="section-accounts" class="space-y-6">
+                <div class="flex justify-end mb-4">
+                    <button onclick="openModal('addAccountModal')" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl font-bold transition-all">إضافة حساب جديد</button>
+                </div>
                 <div id="accounts-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6"></div>
                 <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-slate-500 bg-white/5 rounded-3xl border border-dashed border-white/10">
-                    <i data-lucide="message-square-off" class="w-10 h-10 mb-4"></i>
                     <p class="text-xl font-medium">لا يوجد حسابات مضافة حالياً</p>
-                    <button onclick="document.getElementById('addAccountModal').classList.remove('hidden');document.getElementById('addAccountModal').classList.add('flex')" class="mt-6 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold transition-all">إضافة حساب جديد</button>
                 </div>
             </div>
 
             <!-- Links Section -->
             <div id="section-links" class="hidden space-y-6">
                 <div id="links-stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
-                <div class="flex flex-wrap items-center justify-between gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
-                    <div class="flex items-center gap-3 flex-1 min-w-[300px]">
-                        <input type="text" id="link-search" placeholder="بحث في الروابط..." class="flex-1 bg-dark-900 border border-white/10 rounded-xl py-2 px-4 text-sm text-white focus:outline-none">
-                        <select id="link-filter-status" class="bg-dark-900 border border-white/10 rounded-xl py-2 px-4 text-sm text-white focus:outline-none">
-                            <option value="">كل الحالات</option>
-                            <option value="Active">نشط</option>
-                            <option value="Inactive">معطل</option>
-                        </select>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="openModal('importLinksModal')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2">
-                            <i data-lucide="upload" class="w-4 h-4"></i> استيراد
-                        </button>
-                        <button onclick="exportLinks()" class="bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-xl text-sm font-bold border border-white/10">تصدير</button>
-                        <button onclick="renderLinkLogs()" class="p-2 hover:bg-white/5 rounded-xl text-slate-400 border border-white/10"><i data-lucide="history" class="w-5 h-5"></i></button>
+                <div class="flex justify-between items-center bg-white/5 p-4 rounded-2xl">
+                    <div class="flex gap-2">
+                        <button onclick="openModal('importLinksModal')" class="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-bold">استيراد</button>
+                        <button onclick="exportLinks()" class="bg-white/5 text-white px-4 py-2 rounded-xl text-sm font-bold border border-white/10">تصدير</button>
                     </div>
                 </div>
-                <div class="bg-white/5 rounded-2xl border border-white/5 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-right border-collapse">
-                            <thead>
-                                <tr class="bg-white/5 text-slate-400 text-[10px] uppercase tracking-widest">
-                                    <th class="px-6 py-4 font-bold">الرابط</th>
-                                    <th class="px-6 py-4 font-bold">الحالة</th>
-                                    <th class="px-6 py-4 font-bold">الوسوم</th>
-                                    <th class="px-6 py-4 font-bold">تاريخ الإضافة</th>
-                                    <th class="px-6 py-4 font-bold">الظهور</th>
-                                    <th class="px-6 py-4 font-bold">إجراءات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="links-table-body" class="divide-y divide-white/5 text-sm"></tbody>
-                        </table>
-                    </div>
-                    <div id="links-pagination" class="px-6 py-4 flex items-center justify-between border-t border-white/5 bg-white/5"></div>
-                </div>
-            </div>
-
-            <!-- Groups Section -->
-            <div id="section-groups" class="hidden space-y-6">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Left Panel: Controls -->
-                    <div class="lg:col-span-1 space-y-6">
-                        <div class="card p-6 rounded-3xl border border-white/10 bg-dark-900/50">
-                            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                                <i data-lucide="settings" class="w-5 h-5 text-green-500"></i>
-                                إعدادات التعديل
-                            </h3>
-                            
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-xs text-slate-500 mb-2 font-bold uppercase">نوع التعديل</label>
-                                    <select id="group-edit-mode" class="w-full bg-dark-950 border border-white/10 rounded-xl py-3 px-4 text-sm text-white focus:ring-2 focus:ring-green-500/50 outline-none">
-                                        <option value="subject">✏️ تعديل الموضوع (الاسم)</option>
-                                        <option value="description">📝 تعديل الوصف</option>
-                                        <option value="both">✨ تعديل الاثنين معاً</option>
-                                    </select>
-                                </div>
-
-                                <div id="group-subject-container">
-                                    <label class="block text-xs text-slate-500 mb-2 font-bold uppercase">اسم المجموعة الجديد</label>
-                                    <input type="text" id="group-new-subject" placeholder="أدخل الاسم الجديد هنا..." class="w-full bg-dark-950 border border-white/10 rounded-xl py-3 px-4 text-sm text-white focus:ring-2 focus:ring-green-500/50 outline-none">
-                                </div>
-
-                                <div id="group-desc-container" class="hidden">
-                                    <label class="block text-xs text-slate-500 mb-2 font-bold uppercase">الوصف الجديد</label>
-                                    <textarea id="group-new-desc" rows="4" placeholder="أدخل الوصف الجديد هنا..." class="w-full bg-dark-950 border border-white/10 rounded-xl py-3 px-4 text-sm text-white focus:ring-2 focus:ring-green-500/50 outline-none resize-none"></textarea>
-                                </div>
-
-                                <div class="pt-4 border-t border-white/5">
-                                    <label class="block text-xs text-slate-500 mb-4 font-bold uppercase">اختيار الحسابات</label>
-                                    <div id="group-account-selector" class="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto custom-scrollbar">
-                                        <!-- Accounts injected here -->
-                                    </div>
-                                </div>
-
-                                <div class="pt-4 border-t border-white/5">
-                                    <button id="btn-fetch-groups" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
-                                        <i data-lucide="refresh-cw" class="w-4 h-4"></i> جلب المجموعات
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card p-6 rounded-3xl border border-white/10 bg-dark-900/50">
-                            <h3 class="text-sm font-bold text-white mb-4 uppercase tracking-wider">إعدادات التنفيذ</h3>
-                            <div class="space-y-4">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs text-slate-400">التأخير (ثواني)</span>
-                                    <input type="number" id="group-delay" value="5" class="w-16 bg-dark-950 border border-white/10 rounded-lg px-2 py-1 text-xs text-center">
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <input type="checkbox" id="group-skip-errors" checked class="w-4 h-4 rounded border-white/10 bg-dark-950 text-green-500">
-                                    <span class="text-xs text-slate-400">تجاوز المجموعات غير القابلة للتعديل</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right Panel: Groups & Progress -->
-                    <div class="lg:col-span-2 space-y-6">
-                        <div class="card p-6 rounded-3xl border border-white/10 bg-dark-900/50 min-h-[400px] flex flex-col">
-                            <div class="flex items-center justify-between mb-6">
-                                <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                                    <i data-lucide="users" class="w-5 h-5 text-blue-500"></i>
-                                    المجموعات المتاحة
-                                </h3>
-                                <div class="flex items-center gap-2">
-                                    <span id="selected-groups-count" class="text-[10px] bg-white/5 px-2 py-1 rounded-lg text-slate-400 font-bold">0 مختارة</span>
-                                    <button id="btn-select-all-groups" class="text-[10px] text-blue-400 hover:underline">تحديد الكل</button>
-                                </div>
-                            </div>
-
-                            <div id="groups-list-container" class="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-2">
-                                <div class="flex flex-col items-center justify-center py-20 text-slate-600">
-                                    <i data-lucide="search" class="w-12 h-12 mb-4 opacity-20"></i>
-                                    <p class="text-sm">اختر حساباً واضغط على "جلب المجموعات" للبدء</p>
-                                </div>
-                            </div>
-
-                            <div class="mt-6 pt-6 border-t border-white/5 flex gap-3">
-                                <button id="btn-start-group-edit" disabled class="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-600/20">
-                                    <i data-lucide="play" class="w-5 h-5"></i> بدء التنفيذ
-                                </button>
-                                <button id="btn-stop-group-edit" disabled class="px-6 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl font-bold transition-all border border-red-500/20">
-                                    <i data-lucide="square" class="w-5 h-5"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Execution Progress -->
-                        <div id="group-progress-container" class="hidden card p-6 rounded-3xl border border-white/10 bg-dark-900/50">
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-sm font-bold text-white uppercase">حالة التنفيذ</h3>
-                                <span id="group-progress-percent" class="text-green-500 font-bold">0%</span>
-                            </div>
-                            <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden mb-6">
-                                <div id="group-progress-bar" class="bg-green-500 h-full w-0 transition-all duration-500"></div>
-                            </div>
-                            <div class="grid grid-cols-4 gap-4 mb-6">
-                                <div class="text-center p-3 bg-white/5 rounded-2xl">
-                                    <p class="text-[10px] text-slate-500 mb-1 uppercase">ناجح</p>
-                                    <p id="stat-group-success" class="text-lg font-bold text-green-500">0</p>
-                                </div>
-                                <div class="text-center p-3 bg-white/5 rounded-2xl">
-                                    <p class="text-[10px] text-slate-500 mb-1 uppercase">فاشل</p>
-                                    <p id="stat-group-failed" class="text-lg font-bold text-red-500">0</p>
-                                </div>
-                                <div class="text-center p-3 bg-white/5 rounded-2xl">
-                                    <p class="text-[10px] text-slate-500 mb-1 uppercase">لا صلاحية</p>
-                                    <p id="stat-group-noperm" class="text-lg font-bold text-yellow-500">0</p>
-                                </div>
-                                <div class="text-center p-3 bg-white/5 rounded-2xl">
-                                    <p class="text-[10px] text-slate-500 mb-1 uppercase">المتبقي</p>
-                                    <p id="stat-group-remaining" class="text-lg font-bold text-blue-500">0</p>
-                                </div>
-                            </div>
-                            <div id="group-live-feed" class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar text-xs">
-                                <!-- Live logs here -->
-                            </div>
-                        </div>
-                    </div>
+                <div class="bg-white/5 rounded-2xl overflow-hidden">
+                    <table class="w-full text-right">
+                        <thead class="bg-white/5 text-slate-400 text-[10px] uppercase">
+                            <tr><th class="px-6 py-4">الرابط</th><th class="px-6 py-4">الحالة</th><th class="px-6 py-4">الوسوم</th><th class="px-6 py-4">تاريخ الإضافة</th><th class="px-6 py-4">الظهور</th><th class="px-6 py-4">إجراءات</th></tr>
+                        </thead>
+                        <tbody id="links-table-body" class="divide-y divide-white/5 text-sm"></tbody>
+                    </table>
                 </div>
             </div>
 
             <!-- Join Section -->
             <div id="section-join" class="hidden space-y-6">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-1 space-y-6">
-                        <div class="card p-6 rounded-3xl border border-white/10 bg-dark-900/50">
-                            <h3 class="text-lg font-bold text-white mb-6">التحكم بالمهمة</h3>
-                            <div class="grid grid-cols-2 gap-3">
-                                <button id="btn-start-join" onclick="openModal('joinSettingsModal')" class="col-span-2 bg-green-600 hover:bg-green-700 text-white py-3 rounded-2xl font-bold transition-all">بدء الانضمام</button>
-                                <button id="btn-stop-join" onclick="stopJoining()" disabled class="bg-red-600/20 text-red-500 border border-red-500/20 py-3 rounded-2xl font-bold">إيقاف</button>
-                                <button id="btn-pause-join" onclick="pauseJoining()" disabled class="bg-yellow-600/20 text-yellow-500 border border-yellow-500/20 py-3 rounded-2xl font-bold">مؤقت</button>
-                                <button onclick="resetJoinStatus()" class="col-span-2 mt-2 bg-white/5 text-slate-400 py-2 rounded-xl text-[10px] border border-white/10 hover:bg-white/10">إعادة تعيين حالات الانضمام</button>
-                            </div>
-                            <div id="join-progress-container" class="mt-8 hidden space-y-4">
-                                <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                                    <span class="text-slate-500">التقدم</span>
-                                    <span id="join-progress-percent" class="text-green-500">0%</span>
-                                </div>
-                                <div class="w-full bg-white/5 h-2.5 rounded-full overflow-hidden">
-                                    <div id="join-progress-bar" class="bg-green-500 h-full w-0 transition-all duration-500"></div>
-                                </div>
-                            </div>
+                    <div class="card p-6 rounded-3xl">
+                        <h3 class="text-lg font-bold mb-6">التحكم بالمهمة</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button id="btn-start-join" onclick="openModal('joinSettingsModal')" class="col-span-2 bg-green-600 text-white py-3 rounded-2xl font-bold">بدء الانضمام</button>
+                            <button id="btn-stop-join" onclick="stopJoining()" disabled class="bg-red-600/20 text-red-500 py-3 rounded-2xl font-bold">إيقاف</button>
+                            <button id="btn-pause-join" onclick="pauseJoining()" disabled class="bg-yellow-600/20 text-yellow-500 py-3 rounded-2xl font-bold">مؤقت</button>
                         </div>
-                        <div class="card p-6 rounded-3xl border border-white/10 bg-dark-900/50">
-                            <h3 class="text-lg font-bold text-white mb-6">إحصائيات فورية</h3>
-                            <div class="space-y-4" id="join-live-stats">
-                                <!-- Live stats injected here -->
-                            </div>
+                        <div id="join-progress-container" class="mt-8 hidden">
+                            <div class="flex justify-between text-[10px] mb-2"><span>التقدم</span><span id="join-progress-percent">0%</span></div>
+                            <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden"><div id="join-progress-bar" class="bg-green-500 h-full w-0"></div></div>
                         </div>
                     </div>
-                    <div class="lg:col-span-2 space-y-6">
-                        <div class="card p-6 rounded-3xl border border-white/10 bg-dark-900/50 flex flex-col h-[400px]">
-                            <h3 class="text-lg font-bold text-white mb-6">سجل الأحداث اللحظي</h3>
-                            <div id="join-live-feed" class="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar text-sm"></div>
+                    <div class="lg:col-span-2 card p-6 rounded-3xl min-h-[400px] flex flex-col">
+                        <h3 class="text-lg font-bold mb-6">سجل الأحداث</h3>
+                        <div id="join-live-feed" class="flex-1 overflow-y-auto space-y-2 text-sm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Groups Section -->
+            <div id="section-groups" class="hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="card p-6 rounded-3xl space-y-4">
+                        <h3 class="text-lg font-bold">إعدادات التعديل</h3>
+                        <select id="group-edit-mode" class="w-full bg-dark-950 border border-white/10 rounded-xl p-3 text-white">
+                            <option value="subject">تعديل الاسم</option>
+                            <option value="description">تعديل الوصف</option>
+                            <option value="both">تعديل الاثنين</option>
+                        </select>
+                        <div id="group-subject-container"><input type="text" id="group-new-subject" placeholder="الاسم الجديد" class="w-full bg-dark-950 border border-white/10 rounded-xl p-3 text-white"></div>
+                        <div id="group-desc-container" class="hidden"><textarea id="group-new-desc" rows="4" placeholder="الوصف الجديد" class="w-full bg-dark-950 border border-white/10 rounded-xl p-3 text-white resize-none"></textarea></div>
+                        <div id="group-account-selector" class="max-h-40 overflow-y-auto space-y-2"></div>
+                        <button id="btn-fetch-groups" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">جلب المجموعات</button>
+                    </div>
+                    <div class="lg:col-span-2 card p-6 rounded-3xl flex flex-col min-h-[400px]">
+                        <div id="groups-list-container" class="flex-1 overflow-y-auto space-y-2"></div>
+                        <div class="mt-6 flex gap-3">
+                            <button id="btn-start-group-edit" disabled class="flex-1 bg-green-600 text-white py-4 rounded-2xl font-bold">بدء التنفيذ</button>
+                            <button id="btn-stop-group-edit" disabled class="px-6 bg-red-600/20 text-red-500 rounded-2xl font-bold border border-red-500/20">إيقاف</button>
                         </div>
-                        <div class="card p-6 rounded-3xl border border-white/10 bg-dark-900/50">
-                            <h3 class="text-lg font-bold text-white mb-6">حالة الحسابات</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="join-accounts-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mentions Section -->
+            <div id="section-mentions" class="hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="card p-6 rounded-3xl space-y-4">
+                        <h3 class="text-lg font-bold">إعدادات الإشارة</h3>
+                        <textarea id="mention-message" rows="6" placeholder="نص الإعلان..." class="w-full bg-dark-950 border border-white/10 rounded-xl p-3 text-white resize-none"></textarea>
+                        <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                            <span class="text-xs">تفعيل الإشارات</span>
+                            <input type="checkbox" id="mention-enabled" checked class="w-4 h-4">
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                            <span class="text-xs">إشارات لكل رسالة</span>
+                            <input type="number" id="mention-max-per-msg" value="20" class="w-16 bg-dark-950 border border-white/10 rounded p-1 text-center">
+                        </div>
+                        <div id="mention-account-selector" class="max-h-40 overflow-y-auto space-y-2"></div>
+                        <button id="btn-fetch-mention-groups" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">جلب المجموعات</button>
+                    </div>
+                    <div class="lg:col-span-2 card p-6 rounded-3xl flex flex-col min-h-[400px]">
+                        <div id="mention-groups-list" class="flex-1 overflow-y-auto space-y-2"></div>
+                        <div class="mt-6 flex gap-3">
+                            <button id="btn-start-mention" disabled class="flex-1 bg-green-600 text-white py-4 rounded-2xl font-bold">بدء الإرسال</button>
+                            <button id="btn-stop-mention" disabled class="px-6 bg-red-600/20 text-red-500 rounded-2xl font-bold border border-red-500/20">إيقاف</button>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
-
-        <footer class="h-10 border-t border-white/5 bg-dark-950/50 px-8 flex items-center justify-between text-[10px] text-slate-500">
-            <div class="flex items-center gap-4">
-                <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> متصل</span>
-                <span id="system-uptime">Uptime: 0s</span>
-            </div>
-            <span>&copy; 2024 Manus Bot Enterprise</span>
-        </footer>
-    </div>
-
-    <!-- Mention Template Modal -->
-    <div id="mentionTemplateModal" class="fixed inset-0 bg-dark-950/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-dark-900 border border-white/10 w-full max-w-md rounded-3xl p-8 shadow-2xl">
-            <h2 class="text-2xl font-bold text-white mb-6">حفظ كقالب جديد</h2>
-            <form id="mentionTemplateForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-2">اسم القالب</label>
-                    <input type="text" id="template-name" required class="w-full bg-dark-950 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-green-500/50">
-                </div>
-                <div class="flex gap-3 mt-8">
-                    <button type="button" onclick="closeModal('mentionTemplateModal')" class="flex-1 bg-white/5 hover:bg-white/10 text-white py-3 rounded-xl font-bold transition-all">إلغاء</button>
-                    <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold transition-all">حفظ القالب</button>
-                </div>
-            </form>
-        </div>
     </div>
 
     <!-- Modals -->
     <div id="addAccountModal" class="hidden fixed inset-0 bg-dark-950/80 backdrop-blur-sm flex items-center justify-center z-[100]">
-        <div class="bg-dark-800 rounded-2xl shadow-2xl w-full max-w-md p-8 border border-white/10">
+        <div class="bg-dark-800 rounded-3xl p-8 w-full max-w-md border border-white/10">
             <h3 class="text-xl font-bold text-white mb-6">إضافة حساب جديد</h3>
-            <form id="addAccountForm" class="space-y-6">
-                <input type="text" id="acc-name" required class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none" placeholder="اسم الحساب">
-                <div class="grid grid-cols-2 gap-4">
-                    <label class="cursor-pointer"><input type="radio" name="acc-type" value="Messenger" checked class="sr-only peer"><div class="p-4 border border-white/10 rounded-xl text-center peer-checked:border-green-500 peer-checked:bg-green-500/10">Messenger</div></label>
-                    <label class="cursor-pointer"><input type="radio" name="acc-type" value="Business" class="sr-only peer"><div class="p-4 border border-white/10 rounded-xl text-center peer-checked:border-green-500 peer-checked:bg-green-500/10">Business</div></label>
+            <form id="addAccountForm" class="space-y-4">
+                <input type="text" id="acc-name" placeholder="اسم الحساب" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white" required>
+                <div class="flex gap-4">
+                    <label class="flex-1 flex items-center gap-2 p-3 bg-white/5 rounded-xl cursor-pointer"><input type="radio" name="acc-type" value="Messenger" checked> Messenger</label>
+                    <label class="flex-1 flex items-center gap-2 p-3 bg-white/5 rounded-xl cursor-pointer"><input type="radio" name="acc-type" value="Business"> Business</label>
                 </div>
-                <button type="submit" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold">إنشاء الحساب والربط</button>
+                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold">إضافة</button>
             </form>
             <button onclick="closeModal('addAccountModal')" class="mt-4 text-slate-500 text-sm w-full">إلغاء</button>
         </div>
     </div>
 
     <div id="qrModal" class="hidden fixed inset-0 bg-dark-950/80 backdrop-blur-sm flex items-center justify-center z-[100]">
-        <div class="bg-dark-800 rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center border border-white/10">
-            <h3 class="text-xl font-bold text-white mb-6">مسح رمز QR</h3>
-            <div id="qr-container" class="bg-white p-6 rounded-2xl mb-6 flex justify-center"><canvas id="qr-canvas"></canvas></div>
-            <button onclick="closeModal('qrModal')" class="bg-white/5 text-white px-6 py-2 rounded-xl">إغلاق</button>
+        <div class="bg-white p-8 rounded-3xl flex flex-col items-center">
+            <canvas id="qr-canvas"></canvas>
+            <p class="mt-4 text-slate-900 font-bold">امسح الكود لربط الحساب</p>
+            <button onclick="closeModal('qrModal')" class="mt-6 bg-red-500 text-white px-8 py-2 rounded-xl font-bold">إغلاق</button>
         </div>
     </div>
 
     <div id="importLinksModal" class="hidden fixed inset-0 bg-dark-950/80 backdrop-blur-sm flex items-center justify-center z-[100]">
-        <div class="bg-dark-800 rounded-3xl shadow-2xl w-full max-w-md p-8 border border-white/10">
+        <div class="bg-dark-800 rounded-3xl p-8 w-full max-w-md border border-white/10">
             <h3 class="text-xl font-bold text-white mb-6">استيراد روابط</h3>
-            <form id="importLinksForm" class="space-y-6">
-                <input type="file" id="link-file" accept=".txt,.csv,.json,.xlsx,.xls" required class="w-full text-slate-400">
-                <div id="import-monitor" class="hidden space-y-4 p-5 bg-dark-950/50 rounded-2xl">
-                    <div class="flex justify-between text-[10px] text-slate-500"><span id="import-progress-text">0%</span></div>
-                    <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden"><div id="import-progress-bar" class="bg-green-500 h-full w-0"></div></div>
-                </div>
-                <button type="submit" id="btn-start-import" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold">بدء الاستيراد</button>
+            <form id="importLinksForm" class="space-y-4">
+                <input type="file" id="link-file" class="w-full text-sm text-slate-500 file:bg-green-600 file:text-white file:border-none file:px-4 file:py-2 file:rounded-xl file:mr-4" required>
+                <div id="import-monitor" class="hidden space-y-2"><div class="w-full bg-white/5 h-2 rounded-full overflow-hidden"><div id="import-progress-bar" class="bg-green-500 h-full w-0"></div></div></div>
+                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold">بدء الاستيراد</button>
             </form>
             <button onclick="closeModal('importLinksModal')" class="mt-4 text-slate-500 text-sm w-full">إغلاق</button>
         </div>
     </div>
 
-    <div id="linkLogsModal" class="hidden fixed inset-0 bg-dark-950/80 backdrop-blur-sm flex items-center justify-center z-[100]">
-        <div class="bg-dark-800 rounded-3xl shadow-2xl w-full max-w-2xl p-8 border border-white/10">
-            <h3 class="text-xl font-bold text-white mb-6">سجل العمليات</h3>
-            <div class="max-h-[50vh] overflow-y-auto custom-scrollbar">
-                <table class="w-full text-right text-xs"><tbody id="link-logs-body" class="divide-y divide-white/5"></tbody></table>
-            </div>
-            <button onclick="closeModal('linkLogsModal')" class="mt-6 bg-white/5 text-white px-6 py-2 rounded-xl">إغلاق</button>
-        </div>
-    </div>
-
     <div id="joinSettingsModal" class="hidden fixed inset-0 bg-dark-950/80 backdrop-blur-sm flex items-center justify-center z-[100]">
-        <div class="bg-dark-800 rounded-3xl shadow-2xl w-full max-w-lg p-8 border border-white/10">
+        <div class="bg-dark-800 rounded-3xl p-8 w-full max-w-md border border-white/10">
             <h3 class="text-xl font-bold text-white mb-6">إعدادات الانضمام</h3>
-            <form id="joinSettingsForm" class="space-y-6">
-                <div id="join-account-selector" class="grid grid-cols-2 gap-3 max-h-40 overflow-y-auto pr-2 custom-scrollbar"></div>
-                <div class="grid grid-cols-2 gap-6">
+            <form id="joinSettingsForm" class="space-y-4">
+                <div id="join-account-selector" class="max-h-40 overflow-y-auto space-y-2"></div>
+                <div class="grid grid-cols-2 gap-4">
                     <input type="number" id="join-min-delay" value="30" class="bg-white/5 border border-white/10 rounded-xl p-3 text-white" placeholder="أدنى فاصل">
                     <input type="number" id="join-max-delay" value="60" class="bg-white/5 border border-white/10 rounded-xl p-3 text-white" placeholder="أقصى فاصل">
                 </div>
-                <button type="submit" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold">تأكيد وبدء المهمة</button>
+                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold">تأكيد وبدء</button>
             </form>
             <button onclick="closeModal('joinSettingsModal')" class="mt-4 text-slate-500 text-sm w-full">إلغاء</button>
         </div>
